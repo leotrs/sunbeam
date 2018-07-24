@@ -22,7 +22,7 @@ version of the code in this repository.
 # Installation
 
 To install, simply `git clone` this repository, import the `sunbeam` module
-and call the `nbd` function.  For `sunbeam` to work correctly you need to
+and call the `nbdist` function.  For `sunbeam` to work correctly you need to
 have installed NumPy, SciPy, NetworkX, and (optionally) Matplotlib.
 
 
@@ -37,7 +37,7 @@ import networkx as nx
 er = nx.erdos_renyi_graph(300, 0.05)
 ba = nx.barabasi_albert_graph(300, 3)
 sunbeam.nbdist(er, ba, 20)
-# <- 13.938343758008838
+# 13.938343758008838
 ```
 
 A more extensive example of the functionality provided in `sunbeam.py` can
