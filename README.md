@@ -14,7 +14,9 @@ distances) between graphs.  For more information, see
 All experiments and figures in this paper were generated with an earlier
 version of the code in this repository.
 
-![random eigenvalues](random_eigenvalues.png)
+<p align="center">
+  <img src="https://github.com/leotrs/sunbeam/blob/master/random_eigenvalues.png?raw=true" alt="random eigenvalues"/>
+</p>
 
 
 # Installation
