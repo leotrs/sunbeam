@@ -14,7 +14,7 @@ distances) between graphs.  For more information, see
 All experiments and figures in this paper were generated with an earlier
 version of the code in this repository.
 
-![random eigenvalues](random_eigenvalues.png =150x150)
+![random eigenvalues](random_eigenvalues.png)
 
 
 # Installation
