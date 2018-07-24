@@ -41,4 +41,4 @@ sunbeam.nbdist(er, ba, 20)
 ```
 
 A more extensive example of the functionality provided in `sunbeam.py` can
-be found in the example notebook.
+be found in the [example notebook](https://github.com/leotrs/sunbeam/blob/master/example.ipynb).
