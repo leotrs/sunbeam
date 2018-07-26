@@ -6,28 +6,38 @@ sunbeam.py
 contains three kinds of functions related to the computation of distances
 between graphs using the eigenvalues of the non-backtracking matrix.
 
-1. Matrix Representations.  The function `fast_hashimoto` computes the
-Hashimoto or `non-backtracking` matrix of a graph, while `pseudo_hashimoto`
-computes a block matrix whose eigenvalues are also eigenvalues of the
-Hashimoto matrix.  The function `half_incidence` returns the half-incidence
-matrices of the graph.  These are useful when computing the Hashimoto
-matrix or its eigenvalues efficiently.  See discussion in [1].  Building
-the pseudo-Hashimoto matrix is always considerably faster than building the
-Hashimoto matrix.  Building the former takes as long as building the
-adjacency matrix of the graph.  Building the latter scales as the second
-moment of the degree distribution of the graph (i.e., graphs with
-heavy-tail degree distributions will take longer).
+## Matrix Representations
 
-2. Eigenvalue function.  The function `nbeigs` returns the non-backtracking
-eigenvalues of a graph.  The eigenvalues may be returned as complex
-numbers, as a 2D array, or as a 1D 'unrolled' feature vector.  Different
-formats are convenient for different purposes.  In computing the
-eigenvalues, we first obtain the 2-core of the graph by a process known as
-'shaving'.  See algorithm 5.1 of [1].
+The function `fast_hashimoto` computes the Hashimoto or `non-backtracking`
+matrix of a graph, while `pseudo_hashimoto` computes a block matrix whose
+eigenvalues are also eigenvalues of the Hashimoto matrix.  The function
+`half_incidence` returns the half-incidence matrices of the graph.  These
+are useful when computing the Hashimoto matrix or its eigenvalues
+efficiently.  See discussion in [1].  Building the pseudo-Hashimoto matrix
+is always considerably faster than building the Hashimoto matrix.  Building
+the former takes as long as building the adjacency matrix of the graph.
+Building the latter scales as the second moment of the degree distribution
+of the graph (i.e., graphs with heavy-tail degree distributions will take
+longer).
 
-3. Distance function.  The function `nbdist` takes two graphs and returns
-the distance between their non-backtracking eigenvalue spectra, as
-described in [1].  
+## Eigenvalue function
+
+The function `nbeigs` returns the non-backtracking eigenvalues of a graph.
+The eigenvalues may be returned as complex numbers, as a 2D array, or as a
+1D 'unrolled' feature vector.  Different formats are convenient for
+different purposes.  In computing the eigenvalues, we first obtain the
+2-core of the graph by a process known as 'shaving'.  See algorithm 5.1 of
+[1].
+
+## Distance function
+
+The function `nbdist` takes two graphs and returns the distance between
+their non-backtracking eigenvalue spectra.  It also offers the optional
+fine-tuning parameters sigma and eta.  These are used to make `nbdist` more
+versatile and able to emphasize triangles or degree distribution.  For more
+information, see [1].
+
+## References
 
 [1] Leo Torres, P. Suárez Serrato, and T. Eliassi-Rad, **Graph Distance
     from the Topological View of Non-Backtracking Cycles**, preprint,
