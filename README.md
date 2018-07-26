@@ -34,11 +34,10 @@ A minimal example of how to use `sunbeam.py`:
 ```
 import sunbeam
 import networkx as nx
-
 er = nx.erdos_renyi_graph(300, 0.05)
 ba = nx.barabasi_albert_graph(300, 3)
-sunbeam.nbdist(er, ba, 20)
-# 13.938343758008838
+sunbeam.nbdist(er, ba, 20)                      # 15.327196615382533
+sunbeam.nbdist(er, ba, 20, sigma=11, eta=0.6)   # 596.05874770609171
 ```
 
 A more extensive example of the functionality provided in `sunbeam.py` can

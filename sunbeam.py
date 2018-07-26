@@ -289,8 +289,14 @@ def shave(graph):
 # 3. Distance computation #
 ###########################
 
-def nbdist(graph1, graph2, topk):
+def nbdist(graph1, graph2, topk, sigma=1.0, eta=0.0):
     """Compute the non-backtracking spectral distance.
+
+    Let c_j = a_j + i * b_j be the j-th non-backtracking eigenvalue of
+    graph1, for j=1,2,..,topk.  We build the vector
+        v_1 = (a_1, a_2, ..., a_topk, b_1, b_2, ..., b_topk)
+    and compare it to the corresponding vector v_2 coming from graph2 using
+    the Euclidean distance.
 
     Params
     ------
@@ -299,21 +305,53 @@ def nbdist(graph1, graph2, topk):
 
     topk (int): The number of eigenvalues to compute and compare.
 
+    sigma (flat): Fine-tuning parameter for number of triangles.  Before
+    comparison, we replace v_i with
+        v'_i = (sigma*a_1, sigma*a_2, ...,
+                b_1/sigma, b_2/sigma, ...)
+    for i=1,2.  The larger the sigma, the larger the emphasis on number of
+    triangles when comparing two graphs.  Default 1.0 (no emphasis).
+
+    eta (float): Fine-tuning parameter for degree distribution.  Before
+    comparison, we replace v_i with
+        v'_i = (|c_1|^eta * a_1, |c_2|^eta * a_2, ...,
+                |c_1|^eta * b_1, |c_2|^eta * b_2, ...)
+    for i=1,2.  The larger the eta, the larger the emphasis on the second
+    moment of the degree distribution when comparing two graphs.  Default
+    0.0 (no emphasis).
+
     Returns
     -------
 
     A real number, the distance between graph1 and graph2.
 
-    Note
-    ----
+    Notes
+    -----
 
     If one graph has fewer eigenvalues than requested, the comparison uses
-    the most possible eigenvalues.
+    the most possible eigenvalues.  For more information on the fine tuning
+    parameters sigma and eta, see [1].
+
+    References
+    ----------
+
+    [1] Leo Torres, P. Suárez Serrato, and T. Eliassi-Rad, **Graph Distance
+    from the Topological View of Non-Backtracking Cycles**, preprint,
+    arXiv:1807.09592 [cs.SI], (2018).
 
     """
-    vals1 = nbeigs(graph1, topk, fmt='2d')
-    vals2 = nbeigs(graph2, topk, fmt='2d')
-    min_len = min(vals1.shape[0], vals2.shape[0])
-    vals1 = vals1[:min_len].reshape(-1, 1)
-    vals2 = vals2[:min_len].reshape(-1, 1)
-    return np.linalg.norm(vals1 - vals2)
+    def fine_tune(graph):
+        """Return fine-tuned eigenvalues."""
+        eigs = nbeigs(graph, topk, fmt='complex')
+        vals = np.abs(eigs)**eta
+        eigs = eigs * vals
+        eigs = np.array([(c.real * sigma, c.imag / sigma) for c in eigs])
+        return eigs
+
+    eigs1 = fine_tune(graph1)
+    eigs2 = fine_tune(graph2)
+    min_len = min(eigs1.shape[0], eigs2.shape[0])
+    eigs1 = eigs1[:min_len].T.flatten()
+    eigs2 = eigs2[:min_len].T.flatten()
+
+    return np.linalg.norm(eigs1 - eigs2)
