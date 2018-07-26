@@ -8,8 +8,8 @@ the theory of the length spectrum.  The eigenvalues of the non-backtracking
 matrix can be effectively used to compute dissimilarity scores (or
 distances) between graphs.  For more information, see
 
-> Leo Torres, P. Suárez Serrato, and T. Eliassi-Rad, *Graph Distance from
-> the Topological View of Non-Backtracking Cycles*, preprint,
+> Leo Torres, P. Suárez Serrato, and T. Eliassi-Rad, **Graph Distance from
+> the Topological View of Non-Backtracking Cycles**, preprint,
 > arXiv:1807.09592 [cs.SI], (2018).
 
 All experiments and figures in this paper were generated with an earlier
