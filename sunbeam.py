@@ -27,10 +27,11 @@ eigenvalues, we first obtain the 2-core of the graph by a process known as
 
 3. Distance function.  The function `nbdist` takes two graphs and returns
 the distance between their non-backtracking eigenvalue spectra, as
-described in [1].
+described in [1].  
 
-[1] Leo Torres, P. Suárez Serrato, and T. Eliassi-Rad
-    Graph Distance from the Topological View of Non-Backtracking Cycles.
+[1] Leo Torres, P. Suárez Serrato, and T. Eliassi-Rad, **Graph Distance
+    from the Topological View of Non-Backtracking Cycles**, preprint,
+    arXiv:1807.09592 [cs.SI], (2018).
 
 Autor: leotrs (leo@leotrs.com)
 
