@@ -15,12 +15,11 @@ matrix of a graph, while `pseudo_hashimoto` computes a block matrix whose
 eigenvalues are also eigenvalues of the Hashimoto matrix.  The function
 `half_incidence` returns the half-incidence matrices of the graph.  These
 are useful when computing the Hashimoto matrix or its eigendecomposition
-efficiently.  See discussion in [1].  Building the pseudo-Hashimoto matrix
-is always considerably faster than building the Hashimoto matrix.  Building
-the former takes as long as building the adjacency matrix of the graph.
-Building the latter scales as the second moment of the degree distribution
-of the graph (i.e., graphs with heavy-tail degree distributions will take
-longer).
+efficiently.  Building the pseudo-Hashimoto matrix is always faster than
+building the Hashimoto matrix.  Building the former takes as long as
+building the adjacency matrix of the graph.  Building the latter scales as
+the second moment of the degree distribution of the graph (i.e., graphs
+with heavy-tail degree distributions will take longer).
 
 ## Eigendecomposition
 
@@ -28,29 +27,29 @@ The function `nbvals` returns the non-backtracking eigenvalues of a graph.
 The eigenvalues may be returned as complex numbers, as a 2D array, or as a
 1D 'unrolled' feature vector.  Different formats are convenient for
 different purposes.  In computing the eigenvalues, we first obtain the
-2-core of the graph by a process known as 'shaving'.  See algorithm 5.1 of
-[1]. The function `nbvecs` returns the eigenvectors of the non-backtracking
-matrix, which can be used for visualization and as an embedding
-technique. The first eigenvector always has real entries, but there is no
-guarantee for the n-th eigenvector for n>1. You can choose wheter to apply
-the projection `f` to get a real embedding. The function `nbeig` return
-both eigenvalues and eigenvectors.
+2-core of the graph by a process known as 'shaving'.  The function `nbvecs`
+returns the eigenvectors of the non-backtracking matrix, which can be used
+for visualization and as an embedding technique.  The first eigenvector
+always has real entries, but there is no guarantee for the n-th eigenvector
+for n>1.  You can choose whether to apply a projection to get a real-valued
+embedding. `nbvecs` can be used to return both eigenvectors and
+eigenvalues.
 
 ## Distance
 
 The function `nbd` takes two graphs and returns the distance between
 their non-backtracking eigenvalue spectra.  It also offers the optional
 fine-tuning parameters sigma and eta.  These are used to make `nbdist` more
-versatile and able to emphasize triangles or degree distribution.  For more
-information, see [1].
+versatile and able to emphasize triangles or degree distribution.
 
 ## Embedding
 
 The function `nbed` returns the 2-dimensional, real, embedding of a graph.
+Visualization is available through `visualize_nbed`.
 
 ## Notes
 
-1. This library assumes that the nodes of every graph are labeled by
+This library assumes that the nodes of every graph are labeled by
 consecutive integers starting with 0.
 
 ## References
@@ -86,11 +85,8 @@ def pseudo_hashimoto(graph):
          [-I  A ]
 
     Where D is the degree-diagonal matrix, I is the identity matrix and A
-    is the adjacency matrix.  See [1] for the relationship between the
-    Hashimoto matrix B and the pseudo-Hashimoto matrix B'.
-
-    [1] Leo Torres, P. Suárez Serrato, and T. Eliassi-Rad
-        Graph Distance from the Topological View of Non-Backtracking Cycles.
+    is the adjacency matrix.  The eigenvalues of B' are always eigenvalues
+    of B, the non-backtracking or Hashimoto matrix.
 
     Params
     ------
@@ -133,11 +129,11 @@ def half_incidence(graph, ordering='blocks', return_ordering=False):
     the i'th edge are placed at i and i+m.  That is, choose an arbitarry
     direction for each edge in the graph.  The first m columns correspond
     to this orientation, while the latter m columns correspond to the
-    reversed orientation.  Columns in either block are sorted following
-    graph.edges().  If 'consecutive', the first two columns correspond to
-    the two orientations of the first edge, the third and fourth row are
-    the two orientations of the second edge, and so on.  In general, the
-    two columns for the i'th edge are placed at 2i and 2i+1.
+    reversed orientation.  Columns are sorted following graph.edges().  If
+    'consecutive', the first two columns correspond to the two orientations
+    of the first edge, the third and fourth row are the two orientations of
+    the second edge, and so on.  In general, the two columns for the i'th
+    edge are placed at 2i and 2i+1.
 
     return_ordering (bool): if True, return a function that maps an edge id
     to the column placement.  That is, if ordering=='blocks', return the
@@ -193,7 +189,7 @@ def half_incidence(graph, ordering='blocks', return_ordering=False):
             func = lambda x: (2*x, 2*x + 1)
         return src, tgt, func
     else:
-        return src, tgt, None
+        return src, tgt
 
 
 def fast_hashimoto(graph, ordering='blocks', return_ordering=False):
@@ -215,7 +211,10 @@ def fast_hashimoto(graph, ordering='blocks', return_ordering=False):
     A sparse (csr) matrix.
 
     """
-    sources, targets, ord_func = half_incidence(graph, ordering, return_ordering)
+    if return_ordering:
+        sources, targets, ord_func = half_incidence(graph, ordering, return_ordering)
+    else:
+        sources, targets = half_incidence(graph, ordering, return_ordering)
     temp = np.dot(targets.T, sources).asformat('coo')
     temp_coords = set(zip(temp.row, temp.col))
 
@@ -237,8 +236,10 @@ def fast_hashimoto(graph, ordering='blocks', return_ordering=False):
 def nbvecs(graph, topk, return_vals=False, tol=TOL):
     """Compute the unit eigenvectors corresponding to the largest eigenvalues.
 
-    If v is an eigenvector, then -v also is one. By convention, return the
-    eigenvectors all of whose first entries have positive real parts.
+    By convention, return the eigenvectors all of whose first entries have
+    positive real parts.  This is done to avoid the arbitrariness in the
+    signs of the eigenvectors, since whenever v is an eigenvector, -v also
+    is one.
 
     Params
     ------
@@ -247,7 +248,7 @@ def nbvecs(graph, topk, return_vals=False, tol=TOL):
 
     topk (int): The nunber of eigenvectors to compute.
 
-    return_vals (bool): Whether to return eigenvalues too. Default False.
+    return_vals (bool): Whether to return eigenvalues too.  Default False.
 
     tol (float): Numerical tolerance.  Default 1e-5.
 
@@ -279,13 +280,13 @@ def nbvals(graph, topk='automatic', batch=100, fmt='complex', tol=TOL):
     graph (nx.Graph): The graph.
 
     topk (int or 'automatic'): The number of eigenvalues to compute.  The
-    maximum number of eigenvalues that can be computed is 2*n - 2, where n
+    maximum number of eigenvalues that can be computed is 2*n - 4, where n
     is the number of nodes in graph.  All the other eigenvalues are equal
     to +-1. If 'automatic', return all eigenvalues whose magnitude is
     larger than the square root of the largest eigenvalue.
 
     batch (int): If topk is 'automatic', compute this many eigenvalues at a
-    time until the condition is met.
+    time until the condition is met.  Must be at most 2*n - 4; default 100.
 
     fmt (str): The format of the return value.  If 'complex', return a list
     of complex numbers, sorted by increasing absolute value.  If '2D',
@@ -302,36 +303,39 @@ def nbvals(graph, topk='automatic', batch=100, fmt='complex', tol=TOL):
     A list or array with the eigenvalues, depending on the value of fmt.
 
     """
+    if not isinstance(topk, str) and topk < 1:
+        return np.array([[], []])
+
     # The eigenvalues are left untouched by removing the nodes of degree 1.
     # Moreover, removing them makes the computations faster.  This
     # 'shaving' leaves us with the 2-core of the graph.
     core = shave(graph)
     matrix = pseudo_hashimoto(core)
-    if topk > matrix.shape[0] - 1:
+    if not isinstance(topk, str) and topk > matrix.shape[0] - 1:
         topk = matrix.shape[0] - 2
         print('Computing only {} eigenvalues'.format(topk))
 
-    if topk < 1:
-        return np.array([[], []])
-
-    topk = batch if topk == 'automatic' else topk
+    if topk == 'automatic':
+        batch = min(batch, 2*graph.order() - 4)
+        print('Using batch size {}'.format(batch))
+        topk = batch
     eigs = lambda k: sparse.linalg.eigs(matrix, k=k, return_eigenvectors=False, tol=tol)
     count = 1
-    while true:
+    while True:
         vals = eigs(topk*count)
         largest = np.sqrt(abs(max(vals, key=abs)))
-        if abs(vals[0]) <= largest or not topk == 'automatic':
+        if abs(vals[0]) <= largest or topk != 'automatic':
             break
+        count += 1
     if topk == 'automatic':
         vals = vals[abs(vals) > largest]
 
-    # The eigenvalues are sometimes returned in no particular order, which
-    # may yield different feature vectors for the same graph. For example,
-    # if a graph has a + ib and a - ib as eigenvalues, the eigenvalue
-    # solver may return [..., a + ib, a - ib, ...] in one call and [..., a
-    # - ib, a + ib, ...] in another call. To avoid this, we arbitrarily
-    # sort the eigenvalues first by absolute value, then by real part, then
-    # by imaginary part.
+    # The eigenvalues are returned in no particular order, which may yield
+    # different feature vectors for the same graph.  For example, if a
+    # graph has a + ib and a - ib as eigenvalues, the eigenvalue solver may
+    # return [..., a + ib, a - ib, ...] in one call and [..., a - ib, a +
+    # ib, ...] in another call.  To avoid this, we sort the eigenvalues
+    # first by absolute value, then by real part, then by imaginary part.
     vals = sorted(vals, key=lambda x: x.imag)
     vals = sorted(vals, key=lambda x: x.real)
     vals = np.array(sorted(vals, key=np.linalg.norm))
@@ -375,7 +379,7 @@ def nbd(graph1, graph2, topk='automatic', metric='EMD', vals=None, sigma=1.0,
 
     NBD uses the non-backtracking eigenvalues for graph comparison. The
     metric used to compare the two sets of eigenvalues is controlled by
-    parameter `metric`. Assume lambda_i, i=1,...,n are the eigenvalues of
+    parameter `metric`.  Assume lambda_i, i=1,...,n are the eigenvalues of
     graph1, and mu_j, j=1,...,m are the eigenvalues of graph2.
 
     Params
@@ -384,78 +388,61 @@ def nbd(graph1, graph2, topk='automatic', metric='EMD', vals=None, sigma=1.0,
     graph1, graph2 (nx.Graph): The graphs to compare.
 
     topk (int or 'automatic'): The number of eigenvalues to compute and
-    compare. If 'automatic' (default), use the eigenvalues whose magnitude
+    compare.  If 'automatic' (default), use the eigenvalues whose magnitude
     is larger than sqrt(lambda_1) where lambda_1 is the largest eigenvalue
-    of graph1. For graph2, use sqrt(mu_1) instead. Note this may yield
-    different number of eigenvalues for each graph. See parameter `metric` to
-    see how this is handled by each distance. If int, compute the same
+    of graph1.  For graph2, use sqrt(mu_1) instead.  Note this may yield
+    different number of eigenvalues for each graph.  See parameter `metric`
+    to see how this is handled by each distance.  If int, compute the same
     number of eigenvalues of both graphs.
 
     metric (str): Determines the distance used to compare eigenvalues. If
-    'emd' (default) use earth-mover distance (aka Wasserstein). If
-    Hausdorff, use
-        max(max_j min_i d(lambda_i, mu_j), max_i min_j d(lambda_i, mu_j))
-    If 'euclidean', use Euclidean distance between the vectors
-    (lambda_1,..., lambda_n) for graph1 and (mu_1,..., mu_m) for
-    graph2. For Euclidean, if n != m, use the smallest number of
-    eigenvalues for both graphs.
+    'emd' (default) use earth-mover distance (aka Wasserstein).  If
+    Hausdorff, use $max(max_j min_i d(lambda_i, mu_j), max_i min_j
+    d(lambda_i, mu_j))$.  If 'euclidean', use Euclidean distance between
+    the vectors $(lambda_1,..., lambda_n)$ for graph1 and $(mu_1,...,
+    mu_m)$ for graph2.  For Euclidean, if n != m, use the smallest number
+    of eigenvalues for both graphs.
 
     vals (tuple): a 2-tuple containing precomputed eigenvalues in any shape
-    output by nbvals. If not None, use these eigenvalues instead of
-    computing them again. In that case, and if `topk` is 'automatic', only
+    output by nbvals.  If not None, use these eigenvalues instead of
+    computing them again.  In that case, and if `topk` is 'automatic', only
     use the outer eigenvalues among these precomputed ones.
 
     sigma (flat): Fine-tuning parameter for number of triangles.  Before
-    comparison, we replace v_i with
-        v'_i = (sigma*a_1, sigma*a_2, ...,
-                b_1/sigma, b_2/sigma, ...)
-    for i=1,2.  The larger the sigma, the larger the emphasis on number of
-    triangles when comparing two graphs.  Default 1.0 (no emphasis).
+    comparison, we replace v_i with $v'_i = (sigma*a_1, sigma*a_2, ...,
+    b_1/sigma, b_2/sigma, ...)$ for i=1,2.  The larger the sigma, the
+    larger the emphasis on number of triangles when comparing two graphs.
+    Default 1.0 (no emphasis).
 
     eta (float): Fine-tuning parameter for degree distribution.  Before
-    comparison, we replace v_i with
-        v'_i = (|c_1|^eta * a_1, |c_2|^eta * a_2, ...,
-                |c_1|^eta * b_1, |c_2|^eta * b_2, ...)
-    for i=1,2.  The larger the eta, the larger the emphasis on the second
-    moment of the degree distribution when comparing two graphs.  Default
-    0.0 (no emphasis).
+    comparison, we replace v_i with $v'_i = (|c_1|^eta * a_1, |c_2|^eta *
+    a_2, ..., |c_1|^eta * b_1, |c_2|^eta * b_2, ...)$ for i=1,2.  The
+    larger the eta, the larger the emphasis on the second moment of the
+    degree distribution when comparing two graphs.  Default 0.0 (no
+    emphasis).
 
     Returns
     -------
 
     A real number, the distance between graph1 and graph2.
 
-    Notes
-    -----
-
-    If one graph has fewer eigenvalues than requested, the comparison uses
-    the most possible eigenvalues.  For more information on the fine tuning
-    parameters sigma and eta, see [1].
-
-    References
-    ----------
-
-    [1] Leo Torres, P. Suárez Serrato, and T. Eliassi-Rad, **Graph Distance
-    from the Topological View of Non-Backtracking Cycles**, preprint,
-    arXiv:1807.09592 [cs.SI], (2018).
-
     """
     if vals is None:
-        eigs1 = nbvals(graph1, topk, fmt='complex')
-        eigs2 = nbvals(graph2, topk, fmt='complex')
+        vals1 = nbvals(graph1, topk, fmt='2D')
+        vals2 = nbvals(graph2, topk, fmt='2D')
     else:
-        eigs1, eigs2 = vals
+        vals1, vals2 = vals
 
     def fine_tune(vals):
         """Return fine-tuned eigenvalues."""
-        abs_vals = np.abs(vals)**eta
+        abs_vals = np.array([np.abs(v) for v in vals])**eta
         eigs = vals * abs_vals
-        eigs = np.array([(z.real * sigma, z.imag / sigma) for z in eigs])
+        eigs = np.array([(r * sigma, i / sigma) for r, i in eigs])
         return eigs
 
     if not np.allclose(eta, 0) or not np.allclose(sigma, 1):
-        eigs1 = fine_tune(eigs1)
-        eigs2 = fine_tune(eigs2)
+        vals1 = fine_tune(vals1)
+        vals2 = fine_tune(vals2)
 
     if metric.lower() == 'emd':
         mass = lambda num: np.ones(num) / num
@@ -469,10 +456,11 @@ def nbd(graph1, graph2, topk='automatic', metric='EMD', vals=None, sigma=1.0,
         result = max([term1, term2])
 
     elif metric.lower() == 'euclidean':
-        min_len = min(eigs1.shape[0], eigs2.shape[0])
-        eigs1 = eigs1[:min_len].T.flatten()
-        eigs2 = eigs2[:min_len].T.flatten()
-        result = np.linalg.norm(eigs1 - eigs2)
+        min_len = min(vals1.shape[0], vals2.shape[0])
+        vals1 = vals1[:min_len].T.flatten()
+        vals2 = vals2[:min_len].T.flatten()
+        print(vals1 - vals2)
+        result = np.linalg.norm(vals1 - vals2)
 
     return result
 
@@ -490,14 +478,14 @@ def nbed(graph, projection='automatic', normalize=True, tol=TOL):
     graph (nx.Graph): The graph.
 
     projection (function or 'automatic'): The function to convert a complex
-    number into a real number. If function, must accept two complex numbers
-    as parameters. If 'automatic', use the function
-        f(a, b) = Re(a*b) = a.real * b.real - a.imag * b.imag
-    where a is an entry of the eigenvector, b is the corresponding
-    eigenvalue, and Re(.) takes the real part of a complex number.
+    number into a real number.  If function, must accept two complex
+    numbers as parameters.  If 'automatic', use the function f(a, b) =
+    Re(a*b) = a.real * b.real - a.imag * b.imag, where a is an entry of the
+    eigenvector, b is the corresponding eigenvalue, and Re(.) takes the
+    real part of a complex number.
 
     normalize (bool): Whether to normalize the eigenvectors to be unit
-    length after the projection has been applied. Default True.
+    length after the projection has been applied.  Default True.
 
     tol (float): Numerical tolerance.  Default 1e-5.
 
@@ -535,14 +523,17 @@ def edge_degrees(graph, endpoint='source'):
     return the degree of u ('source') or v ('target').
 
     """
+    if endpoint.lower() not in {'source', 'target'}:
+        raise ValueError('endpoint must be one of "source" or "target"')
+
     edges = graph.edges()
     deg_dict = graph.degree()
     degrees_src = np.array([deg_dict[src] for src, _ in edges])
     degrees_tgt = np.array([deg_dict[tgt] for _, tgt in edges])
 
-    if endpoint == 'source':
+    if endpoint.lower() == 'source':
         return np.hstack([degrees_src, degrees_tgt])
-    if endpoint == 'target':
+    if endpoint.lower() == 'target':
         return np.hstack([degrees_tgt, degrees_src])
 
 
@@ -556,7 +547,7 @@ def visualize_nbed(graph, emb=None, color='source', log=False):
 
     graph (nx.Graph): The graph.
 
-    nbed (array): The NBED of graph, as output by `nbed`. If None
+    emb (array): The NBED of graph, as output by `nbed`.  If None
     (default), compute it by calling `nbed`.
 
     color ('source' or 'target'): Whether to color the point corresponding
@@ -571,9 +562,9 @@ def visualize_nbed(graph, emb=None, color='source', log=False):
         emb = nbed(graph)
 
     colors = edge_degrees(graph, endpoint=color)
-    colors = colors / colors.max()
     if log:
         colors = np.log(colors)
+    colors = colors / colors.max()
 
     plt.figure()
     plt.scatter(emb.T[0], emb.T[1], c=colors, cmap=get_cmap('viridis'))
