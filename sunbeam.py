@@ -317,7 +317,8 @@ def nbvals(graph, topk='automatic', batch=100, fmt='complex', tol=TOL):
 
     if topk == 'automatic':
         batch = min(batch, 2*graph.order() - 4)
-        print('Using batch size {}'.format(batch))
+        if 2*graph.order() - 4 < batch:
+            print('Using batch size {}'.format(batch))
         topk = batch
     eigs = lambda k: sparse.linalg.eigs(matrix, k=k, return_eigenvectors=False, tol=tol)
     count = 1
