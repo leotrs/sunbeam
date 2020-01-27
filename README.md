@@ -1,4 +1,5 @@
 
+
 # SuNBEAM
 
 This package provides code to compute the (S)pectral (N)on-(B)acktracking
@@ -7,15 +8,12 @@ non-backtracking matrix is a matrix representation of a graph that has deep
 connections with the theory homotopy of graphs, in particular the length
 spectrum function.  The eigenvalues of the non-backtracking matrix can be
 effectively used to compute dissimilarity scores (or distances) between
-graphs.  An old version of our manuscript can be found at the following
-link.  (Newer version currently under review.)
+graphs.  A previous version of the code in this repository was used in the
+following paper.
 
-> Leo Torres, P. Suárez Serrato, and T. Eliassi-Rad, **Graph Distance from
-> the Topological View of Non-Backtracking Cycles**. Preprint,
-> arXiv:1807.09592 [cs.SI], (2018).
-
-All experiments and figures in this paper were generated with an earlier
-version of the code in this repository.
+> Leo Torres, Pablo Suárez-Serrato, and Tina Eliassi-Rad:
+> **Non-backtracking cycles: length spectrum theory and graph mining
+> applications**. Applied Network Science 4(1): 41:1-41:35 (2019)
 
 <p align="center">
   <img src="https://github.com/leotrs/sunbeam/blob/master/random_eigenvalues.png?raw=true" alt="random eigenvalues"/>
@@ -26,11 +24,8 @@ version of the code in this repository.
 
 To install, simply `git clone` this repository, import the `sunbeam` module
 and call the `nbd` function.  For `sunbeam` to work correctly you need to
-have installed NumPy, SciPy, NetworkX, POT, and (optionally) Matplotlib.
-To install [POT](https://pot.readthedocs.io/en/stable/), run
-```
-$ pip install POT==0.5.1
-```
+have installed NumPy, SciPy, NetworkX, and (optionally) Matplotlib.
+
 
 # Example
 
@@ -56,3 +51,33 @@ sunbeam.visualize_nbed(ba, color='source', log=True)
 
 A more extensive example of the functionality provided in `sunbeam.py` can
 be found in the [example notebook](https://github.com/leotrs/sunbeam/blob/master/example.ipynb).
+
+
+# Citation
+
+When using code in this repository, please cite both the paper and the
+repository,
+
+```
+@article{TorresSE19,
+  author    = {Leo Torres and
+               Pablo Su{\'{a}}rez{-}Serrato and
+               Tina Eliassi{-}Rad},
+  title     = {Non-backtracking cycles: length spectrum theory and graph mining applications},
+  journal   = {Applied Network Science},
+  volume    = {4},
+  number    = {1},
+  pages     = {41:1--41:35},
+  year      = {2019}
+}
+
+@misc{TorresSuNBEaM,
+  author    = {Leo Torres},
+  title     = {{SuNBEaM}: Spectral Non-Backtracking Embedding And pseudo-Metric},
+  year      = {2018},
+  publisher = {GitHub},
+  journal   = {GitHub repository},
+  howpublished = {\url{https://github.com/leotrs/sunbeam}},
+}
+
+```
